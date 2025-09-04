@@ -1,0 +1,659 @@
+<!---Aurbindo Landing--->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurobindo Netralaya - Premier Eye Care Hospital</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Three.js and GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* ---------- Theme / Reset ---------- */
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --primary:#2e7d32;          /* deep green */
+            --primary-600:#2e7d32;
+            --primary-500:#43a047;
+            --primary-300:#7cb342;
+            --accent:#e8f5e9;           /* very light green / white */
+            --muted:#6b6b6b;
+            --glass:rgba(255,255,255,.85);
+            --glass-border:rgba(255,255,255,.6);
+            --shadow:rgba(0,0,0,.08);
+            --text:#12321b;
+        }
+        html,body{height:100%}
+        body{
+            font-family:'Inter',system-ui,Arial,sans-serif;
+            background:linear-gradient(160deg,var(--accent) 0%, #f3fff6 50%, #e8f5e9 100%);
+            color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+        }
+        h1,h2,h3,h4{font-family:'Poppins', 'Segoe UI', sans-serif;color:var(--primary-600)}
+
+        a{color:inherit}
+
+        /* ---------- Loading ---------- */
+        #loading-screen{
+            position:fixed;inset:0;background:linear-gradient(180deg,var(--primary-600),var(--primary-500));
+            display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;transition:opacity .45s ease-out
+        }
+        .loader{width:80px;height:80px;position:relative}
+        .loader:before{
+            content:"";width:80px;height:80px;border-radius:50%;
+            border:6px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.95);animation:spin 1s linear infinite;position:absolute;inset:0
+        }
+        .eye-icon{font-size:36px;color:#fff;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+        @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+        .loading-text{color:#fff;margin-top:18px;font-size:15px;letter-spacing:1px}
+
+        /* ---------- Background (Three.js container) ---------- */
+        #three-container{position:fixed;inset:0;z-index:-2;pointer-events:none}
+        /* make the 3D canvas subtle and cover only hero area visually by masking with gradient using a pseudo element in hero */
+
+        /* ---------- Header ---------- */
+        header{
+            background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.88));
+            backdrop-filter:blur(8px);padding:14px 5%;position:fixed;width:100%;z-index:100;border-bottom:1px solid rgba(0,0,0,.04);
+            box-shadow:0 6px 20px var(--shadow)
+        }
+        .header-container{display:flex;justify-content:space-between;align-items:center;gap:20px}
+        .logo{display:flex;align-items:center;gap:12px}
+        .logo i{font-size:26px;color:var(--primary-600)}
+        .logo h1{font-size:20px;font-weight:700;color:var(--primary-600)}
+
+        nav ul{display:flex;list-style:none;gap:26px;align-items:center}
+        nav ul li a{font-weight:600;padding:8px 6px;border-radius:8px;color:var(--muted);text-decoration:none;transition:all .18s ease}
+        nav ul li a:hover{color:var(--primary-600);background:linear-gradient(90deg, rgba(67,160,71,.09), rgba(46,125,50,.06))}
+
+        .hamburger{display:none;cursor:pointer;background:none;border:none;font-size:20px;color:var(--primary-600)}
+
+        /* ---------- Mobile Menu (slide panel + overlay) ---------- */
+        .mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:190}
+        .mobile-overlay.active{opacity:1;pointer-events:auto}
+        .mobile-menu{
+            position:fixed;top:0;right:-100%;width:320px;max-width:80%;height:100vh;background:linear-gradient(180deg,#fff,#f7fff7);z-index:200;padding:72px 22px 24px;transition:right .28s ease;box-shadow:-12px 0 40px rgba(0,0,0,.08);overflow:auto
+        }
+        .mobile-menu.active{right:0}
+        .mobile-menu ul{list-style:none;padding:6px}
+        .mobile-menu ul li{margin-bottom:14px}
+        .mobile-menu ul li a{display:block;padding:12px;border-radius:10px;color:var(--text);text-decoration:none;font-weight:600}
+        .mobile-menu .close-menu{position:absolute;top:12px;right:12px;background:none;border:0;font-size:22px;color:var(--primary-600);cursor:pointer}
+
+        /* ---------- Hero ---------- */
+        .hero{padding:120px 5% 80px;text-align:center;position:relative;overflow:hidden}
+        .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(180deg, transparent, rgba(232,245,233,.5));pointer-events:none}
+        .hero-content{max-width:960px;margin:0 auto;position:relative;z-index:2}
+        .hero h2{font-size:3rem;margin-bottom:14px;color:var(--primary-600);line-height:1.05;opacity:0;transform:translateY(14px)}
+        .hero p{font-size:1.05rem;margin-bottom:20px;color:#3b3b3b;line-height:1.6;opacity:0;transform:translateY(12px)}
+
+        /* ---------- Cards ---------- */
+        .card{background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.99));border:1px solid rgba(0,0,0,.03);border-radius:14px;padding:22px;box-shadow:0 10px 30px var(--shadow);transition:transform .25s,box-shadow .25s,opacity .3s;opacity:0;transform:translateY(18px)}
+        .card.visible{opacity:1;transform:none}
+        .card:hover{transform:translateY(-6px);box-shadow:0 18px 48px rgba(0,0,0,.08)}
+
+        /* ---------- Buttons ---------- */
+        .btn{padding:12px 26px;border-radius:999px;border:none;font-weight:700;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;outline:none}
+        .btn:focus{box-shadow:0 0 0 4px rgba(67,160,71,.12)}
+        .btn-primary{
+            background:linear-gradient(90deg,var(--primary-500),var(--primary-300));color:#fff;box-shadow:0 8px 20px rgba(67,160,71,.12)
+        }
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 20px 48px rgba(46,125,50,.12)}
+        .btn-secondary{background:#fff;border:1px solid rgba(0,0,0,.04);color:var(--primary-600)}
+
+        .btn[data-ripple] { position:relative; overflow:hidden }
+        .btn[data-ripple]::after{ content:''; position:absolute; left:50%; top:50%; width:8px; height:8px; background:rgba(255,255,255,.35); opacity:0; border-radius:50%; transform:translate(-50%,-50%) scale(1); transition:opacity .5s, transform .5s }
+        .btn[data-ripple]:active::after{ opacity:1; transform:translate(-50%,-50%) scale(40); transition:0s }
+
+        /* ---------- Sections ---------- */
+        .section{padding:72px 5%}
+        .section-title{text-align:center;margin-bottom:36px}
+        .section-title h2{font-size:28px;margin-bottom:8px}
+        .section-title p{color:var(--muted);max-width:760px;margin:0 auto}
+
+        .cards-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+        .department-card{text-align:left;padding:20px}
+        .department-card i{font-size:28px;color:var(--primary-600);margin-bottom:14px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:linear-gradient(180deg, rgba(67,160,71,.08), rgba(46,125,50,.04));}
+        .department-card h3{margin-bottom:6px}
+        .department-card p{color:var(--muted);line-height:1.55}
+
+        /* Carousel */
+        .carousel{margin:36px 0;position:relative;height:380px;overflow:hidden;border-radius:12px}
+        .carousel-slide{position:absolute;inset:0;opacity:0;transition:opacity 900ms ease,transform 900ms ease;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 12%;background-size:cover;background-position:center}
+        .carousel-slide.active{opacity:1}
+        .carousel-slide h3{font-size:1.6rem;color:#fff;margin-bottom:12px}
+        .carousel-slide p{color:#f0f4f0;font-size:1rem}
+
+        /* Tech grid */
+        .tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:18px}
+        .tech-item{display:flex;align-items:flex-start;background:linear-gradient(180deg,#fff,#fbfffb);padding:16px;border-radius:12px;box-shadow:0 8px 20px var(--shadow)}
+        .tech-item i{font-size:20px;color:var(--primary-600);margin-right:14px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(67,160,71,.06)}
+
+        /* Testimonials */
+        .testimonial-card{padding:22px}
+        .testimonial-text{font-style:italic;margin-bottom:14px;line-height:1.6;color:#444;position:relative;padding-left:28px}
+        .testimonial-text:before{content:"“";font-size:44px;color:var(--primary-300);position:absolute;left:0;top:-6px}
+        .testimonial-author{display:flex;align-items:center}
+        .testimonial-author .avatar{width:50px;height:50px;border-radius:50%;background:var(--primary-500);display:flex;align-items:center;justify-content:center;margin-right:12px;color:#fff;font-weight:700}
+
+        /* Contact */
+        .contact-section{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
+        .contact-section .card{height:100%}
+        .map-container{border-radius:12px;overflow:hidden;height:100%;min-height:420px}
+        .map-container iframe{width:100%;height:100%;border:0}
+
+        /* Footer */
+        footer{background:linear-gradient(180deg,var(--primary-600),var(--primary-500));color:#fff;padding:44px 5% 28px}
+        .footer-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin-bottom:18px}
+        .footer-column h3{font-size:18px;margin-bottom:12px;color:rgba(255,255,255,.95)}
+        .footer-column p{color:rgba(255,255,255,.95)}
+        .footer-column ul{list-style:none;padding:0}
+        .footer-column ul li{margin-bottom:12px}
+        .footer-column ul li a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:rgba(255,255,255,.92);text-decoration:none;font-weight:600}
+        .footer-column ul li a i{color:rgba(255,255,255,.8);width:18px;text-align:center}
+        .footer-column ul li a:hover{background:rgba(255,255,255,.06);transform:translateX(6px)}
+        .social-links{display:flex;gap:12px;margin-top:10px}
+        .social-links a{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff}
+        .copyright{text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.85);font-size:.9rem}
+
+        /* ---------- Responsive ---------- */
+        @media (max-width:992px){
+            .hero h2{font-size:2.4rem}
+            nav ul{display:none}
+            .hamburger{display:block}
+            .contact-section{grid-template-columns:1fr}
+            .carousel{height:320px}
+            .map-container{min-height:300px}
+        }
+        @media (max-width:720px){
+            .hero{padding:100px 5% 60px}
+            .hero h2{font-size:1.9rem}
+            .section{padding:48px 5%}
+            .carousel-slide{padding:0 8%}
+        }
+        @media (max-width:420px){
+            .logo h1{font-size:18px}
+            .hero h2{font-size:1.6rem}
+            .card{padding:14px}
+            .mobile-menu{width:88%}
+            .map-container{min-height:260px}
+        }
+
+        /* reduced motion */
+        @media (prefers-reduced-motion: reduce){
+            *{transition:none!important;animation:none!important}
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div id="loading-screen" role="status" aria-live="polite">
+        <div class="loader"><i class="fas fa-eye eye-icon" aria-hidden="true"></i></div>
+        <div class="loading-text">AUROBINDO NETRALAYA</div>
+    </div>
+
+    <!-- Three.js Background -->
+    <div id="three-container" aria-hidden="true"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-eye" aria-hidden="true"></i>
+                <h1>Aurobindo Netralaya</h1>
+            </div>
+
+            <nav aria-label="Main navigation">
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#departments">Departments</a></li>
+                    <li><a href="#technologies">Technologies</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+
+            <button id="hamburger" class="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
+        </div>
+    </header>
+
+    <!-- Mobile Overlay + Menu -->
+    <div class="mobile-overlay" id="mobile-overlay" tabindex="-1" aria-hidden="true"></div>
+    <aside class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <button class="close-menu" id="close-menu" aria-label="Close menu"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <ul>
+            <li><a href="#home" class="mobile-link">Home</a></li>
+            <li><a href="#about" class="mobile-link">About</a></li>
+            <li><a href="#services" class="mobile-link">Services</a></li>
+            <li><a href="#departments" class="mobile-link">Departments</a></li>
+            <li><a href="#technologies" class="mobile-link">Technologies</a></li>
+            <li><a href="#testimonials" class="mobile-link">Testimonials</a></li>
+            <li><a href="#contact" class="mobile-link">Contact</a></li>
+        </ul>
+    </aside>
+
+    <!-- Hero -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h2>Vision Care Excellence</h2>
+            <p>Aurobindo Netralaya provides world-class eye care services with state-of-the-art technology and experienced specialists. Our commitment is to deliver the highest quality eye care with compassion and innovation.</p>
+            <button class="btn btn-primary" id="bookBtn" data-ripple>Book an Appointment</button>
+        </div>
+    </section>
+
+    <!-- Departments / Treatments -->
+    <section class="section" id="departments">
+        <div class="section-title">
+            <h2>Our Specialized Departments & Treatments</h2>
+            <p>Comprehensive eye care services for all vision needs — surgical, medical and rehabilitation.</p>
+        </div>
+        <div class="cards-container" id="treatmentCards">
+            <div class="card department-card">
+                <i class="fas fa-sun"></i>
+                <h3>Cataract Surgery</h3>
+                <p>Advanced phacoemulsification with premium intraocular lenses including toric and multifocal options.</p>
+            </div>
+            <div class="card department-card">
+                <i class="fas fa-eye-drop"></i>
+                <h3>Retina & Vitreous</h3>
+                <p>Management of diabetic retinopathy, macular diseases, retinal detachments and intravitreal therapies.</p>
+            </div>
+            <div class="card department-card">
+                <i class="fas fa-laser"></i>
+                <h3>Cornea & Anterior Segment</h3>
+                <p>Corneal transplants, DSEK/DMEK, keratoconus care and corneal cross-linking for stabilizing ectatic disease.</p>
+            </div>
+            <div class="card department-card">
+                <i class="fas fa-user-nurse"></i>
+                <h3>Pediatric Ophthalmology</h3>
+                <p>Child-friendly evaluations, squint surgery, amblyopia therapy and pediatric retina care.</p>
+            </div>
+            <div class="card department-card">
+                <i class="fas fa-eye"></i>
+                <h3>Glaucoma Clinic</h3>
+                <p>Early detection with OCT/visual fields and medical, laser or surgical glaucoma management.</p>
+            </div>
+            <div class="card department-card">
+                <i class="fas fa-microscope"></i>
+                <h3>Ocular Oncology & Neuro-Ophthalmology</h3>
+                <p>Diagnosis and multidisciplinary care for ocular tumors and vision-related neurological conditions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technologies -->
+    <section class="section" id="technologies">
+        <div class="section-title">
+            <h2>Advanced Eye Care Technologies</h2>
+            <p>We utilize the latest diagnostics and treatment platforms to provide precise and personalized care.</p>
+        </div>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <i class="fas fa-camera-retro"></i>
+                <div>
+                    <h4>Optical Coherence Tomography (OCT)</h4>
+                    <p>High-resolution cross-sectional retinal imaging for macular and optic nerve assessment.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-wave-square"></i>
+                <div>
+                    <h4>Wavefront & Topography</h4>
+                    <p>Customized corneal and refractive mapping for premium vision correction plans.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-laser"></i>
+                <div>
+                    <h4>Femtosecond & Excimer Lasers</h4>
+                    <p>Precision refractive surgeries (LASIK/SMILE) and laser-assisted steps in cataract care.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-blender-phone"></i>
+                <div>
+                    <h4>Phaco & Micro-Incision Surgery</h4>
+                    <p>Modern cataract platforms for rapid recovery and safer outcomes.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-robot"></i>
+                <div>
+                    <h4>Diagnostic Fundus Cameras</h4>
+                    <p>Widefield and digital fundus imaging for comprehensive retinal documentation.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-hand-holding-medical"></i>
+                <div>
+                    <h4>Low-Vision & Vision Rehabilitation</h4>
+                    <p>Adaptive devices and therapy to maximize remaining vision for daily living.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Facilities Carousel -->
+    <section class="section" id="services">
+        <div class="section-title">
+            <h2>Our Facilities</h2>
+            <p>State-of-the-art facilities and a patient-centered environment.</p>
+        </div>
+        <div class="carousel" id="facilitiesCarousel" aria-roledescription="carousel">
+            <div class="carousel-slide active" data-index="0" style="background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?auto=format&fit=crop&w=1350&q=80');">
+                <h3>Advanced Diagnostic Equipment</h3>
+                <p>OCT, visual field analyzers, corneal topographers and digital fundus photography.</p>
+            </div>
+            <div class="carousel-slide" data-index="1" style="background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('https://images.unsplash.com/photo-1585435557343-3b092031d5ad?auto=format&fit=crop&w=1350&q=80');">
+                <h3>Modern Operation Theaters</h3>
+                <p>Clean, well-equipped OT suites for cataract, retina and corneal surgeries.</p>
+            </div>
+            <div class="carousel-slide" data-index="2" style="background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('https://images.unsplash.com/photo-1530026405186-ed1f139313d8?auto=format&fit=crop&w=1350&q=80');">
+                <h3>24/7 Emergency Care</h3>
+                <p>Dedicated trauma and emergency support for acute ocular injuries and infections.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section" id="testimonials">
+        <div class="section-title">
+            <h2>Patient Testimonials</h2>
+            <p>What our patients say about their experience</p>
+        </div>
+        <div class="cards-container">
+            <div class="card testimonial-card">
+                <p class="testimonial-text">I had cataract surgery at Aurobindo Netralaya and the experience was wonderful. The doctors were skilled and the staff was very caring. My vision is now perfect after the surgery.</p>
+                <div class="testimonial-author">
+                    <div class="avatar">RK</div>
+                    <div>
+                        <h4>Rajesh Kumar</h4>
+                        <p style="color:var(--muted);margin-top:4px">Cataract Patient</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card testimonial-card">
+                <p class="testimonial-text">My daughter's squint was completely corrected by the pediatric ophthalmology team. I'm grateful for their expertise and compassion throughout the treatment process.</p>
+                <div class="testimonial-author">
+                    <div class="avatar">PS</div>
+                    <div>
+                        <h4>Priya Singh</h4>
+                        <p style="color:var(--muted);margin-top:4px">Parent of Patient</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card testimonial-card">
+                <p class="testimonial-text">The LASIK procedure was quick and painless. Now I have perfect vision without glasses. Thank you Aurobindo Netralaya for giving me freedom from glasses!</p>
+                <div class="testimonial-author">
+                    <div class="avatar">AV</div>
+                    <div>
+                        <h4>Ankit Verma</h4>
+                        <p style="color:var(--muted);margin-top:4px">LASIK Patient</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section" id="contact">
+        <div class="section-title">
+            <h2>Contact Us</h2>
+            <p>Visit our hospital or get in touch with us</p>
+        </div>
+        <div class="contact-section">
+            <div class="card">
+                <h3>Contact Information</h3>
+                <p style="margin-top:10px"><i class="fas fa-map-marker-alt"></i> Aurobindo Netralaya Main, Raipur - Abhanpur Rd, Pachpedi Naka, Raipur, Chhattisgarh 492015</p>
+                <p><i class="fas fa-phone"></i> +91 771 123 4567</p>
+                <p><i class="fas fa-envelope"></i> info@aurobindonetralaya.com</p>
+                <p><i class="fas fa-clock"></i> Monday to Saturday: 9AM to 6PM</p>
+                <p><i class="fas fa-calendar-alt"></i> Emergency Services: 24/7</p>
+                <div class="social-links" aria-label="social links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="map-container" aria-label="Location map">
+                <iframe id="mapframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3718.136296926758!2d81.6332141759964!3d21.251780480474253!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a28dda23d32450d%3A0x848a3f2c7c0e3f4f!2sAurobindo%20Netralaya!5e0!3m2!1sen!2sin!4v1714567890123!5m2!1sen!2sin" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Aurobindo Netralaya</h3>
+                <p>Providing quality eye care services with compassion and advanced technology since 2005. Our mission is to eliminate preventable blindness.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home"><i class="fas fa-arrow-right"></i> Home</a></li>
+                    <li><a href="#about"><i class="fas fa-arrow-right"></i> About Us</a></li>
+                    <li><a href="#services"><i class="fas fa-arrow-right"></i> Services</a></li>
+                    <li><a href="#departments"><i class="fas fa-arrow-right"></i> Departments</a></li>
+                    <li><a href="#contact"><i class="fas fa-arrow-right"></i> Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Emergency Contact</h3>
+                <p><i class="fas fa-phone"></i> +91 771 123 4567</p>
+                <p><i class="fas fa-clock"></i> 24/7 Emergency Services</p>
+                <p><i class="fas fa-map-marker-alt"></i> Raipur - Abhanpur Rd, Pachpedi Naka, Raipur</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 Aurobindo Netralaya. All Rights Reserved. | Developed by SFY Technologies Pvt Ltd</p>
+        </div>
+    </footer>
+
+    <script>
+        /* ---------- Loading Screen ---------- */
+        document.addEventListener('DOMContentLoaded', function(){
+            setTimeout(function(){
+                const ls = document.getElementById('loading-screen');
+                if(!ls) return;
+                ls.style.opacity = '0';
+                setTimeout(()=>{ ls.style.display = 'none'; }, 450);
+            }, 900);
+        });
+
+        /* ---------- Mobile Menu ---------- */
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenu = document.getElementById('close-menu');
+        const overlay = document.getElementById('mobile-overlay');
+
+        function openMobileMenu(){
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            mobileMenu.setAttribute('aria-hidden','false');
+            overlay.setAttribute('aria-hidden','false');
+            hamburger.setAttribute('aria-expanded','true');
+            document.body.style.overflow='hidden';
+            const first = mobileMenu.querySelector('a'); if(first) first.focus();
+        }
+        function closeMobileMenuFn(){
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            mobileMenu.setAttribute('aria-hidden','true');
+            overlay.setAttribute('aria-hidden','true');
+            hamburger.setAttribute('aria-expanded','false');
+            document.body.style.overflow='';
+            hamburger.focus();
+        }
+
+        hamburger.addEventListener('click', openMobileMenu);
+        closeMenu.addEventListener('click', closeMobileMenuFn);
+        overlay.addEventListener('click', closeMobileMenuFn);
+        document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeMobileMenuFn(); });
+        document.querySelectorAll('.mobile-link').forEach(a=>{ a.addEventListener('click', ()=>{ closeMobileMenuFn(); }); });
+
+        /* ---------- Smooth Scroll for anchors ---------- */
+        function smoothScrollTo(hash){
+            const target = document.querySelector(hash);
+            if(!target) return;
+            const headerOffset = document.querySelector('header').offsetHeight + 12;
+            const elementPosition = target.getBoundingClientRect().top + window.scrollY;
+            const offsetPosition = elementPosition - headerOffset;
+            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+        document.querySelectorAll('a[href^="#"]').forEach(link=>{
+            const href = link.getAttribute('href');
+            if(!href || href === '#') return;
+            link.addEventListener('click', function(e){
+                if(href && href.length > 1){
+                    e.preventDefault(); smoothScrollTo(href);
+                    if(link.classList.contains('mobile-link')) closeMobileMenuFn();
+                }
+            });
+        });
+        const bookBtn = document.getElementById('bookBtn'); if(bookBtn) bookBtn.addEventListener('click', ()=> smoothScrollTo('#contact'));
+
+        /* ---------- Three.js 3D Floating Shapes (lighter) ---------- */
+        (function initThree3D(){
+            const container = document.getElementById('three-container');
+            if(!container || !window.THREE) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.domElement.style.width = '100%';
+            renderer.domElement.style.height = '100%';
+            container.appendChild(renderer.domElement);
+
+            // subtle fog for depth
+            scene.fog = new THREE.FogExp2(0xeaf8ea, 0.002);
+
+            // lights
+            const hemi = new THREE.HemisphereLight(0xffffff, 0x99ffdd, 0.8);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+            dir.position.set(5,10,7);
+            scene.add(hemi, dir);
+
+            // create 3 shapes (icosahedron, torus, box) with green-ish materials
+            const group = new THREE.Group();
+
+            const mat = new THREE.MeshStandardMaterial({ color: 0x66bb6a, metalness:0.3, roughness:0.4, emissive:0x07210a, emissiveIntensity:0.06 });
+            const mat2 = new THREE.MeshStandardMaterial({ color:0x9ccc65, metalness:0.2, roughness:0.35, emissive:0x0b2209, emissiveIntensity:0.04 });
+
+            const icoGeo = new THREE.IcosahedronGeometry(2.2, 1);
+            const ico = new THREE.Mesh(icoGeo, mat);
+            ico.position.set(-6, 2, -6);
+            group.add(ico);
+
+            const torGeo = new THREE.TorusKnotGeometry(1.8, 0.45, 80, 12);
+            const tor = new THREE.Mesh(torGeo, mat2);
+            tor.position.set(3, 1, -4);
+            group.add(tor);
+
+            const boxGeo = new THREE.BoxGeometry(2.4,2.4,2.4);
+            const box = new THREE.Mesh(boxGeo, mat);
+            box.position.set(0, -2, -5);
+            box.rotation.set(0.6,0.2,0.1);
+            group.add(box);
+
+            scene.add(group);
+
+            camera.position.z = 18;
+
+            // responsive adjustments
+            function onResize(){
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            window.addEventListener('resize', onResize);
+
+            // simple mouse parallax
+            const mouse = { x:0, y:0 };
+            document.addEventListener('mousemove', (e)=>{ mouse.x = (e.clientX / window.innerWidth) * 2 - 1; mouse.y = - (e.clientY / window.innerHeight) * 2 + 1; }, { passive:true });
+
+            // animate group: floating + rotation
+            let last = performance.now();
+            function animate(now){
+                const dt = (now - last) / 1000; last = now;
+                // parallax target
+                const tx = mouse.x * 0.6;
+                const ty = mouse.y * 0.4;
+                group.rotation.y += (tx - group.rotation.y) * 0.03;
+                group.rotation.x += (ty - group.rotation.x) * 0.03;
+
+                // individual rotations
+                ico.rotation.x += 0.2 * dt; ico.rotation.y += 0.25 * dt;
+                tor.rotation.x += -0.18 * dt; tor.rotation.y += 0.22 * dt;
+                box.rotation.x += 0.16 * dt; box.rotation.y += -0.14 * dt;
+
+                // gentle bobbing
+                group.position.y = Math.sin(now * 0.0008) * 0.6;
+
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        })();
+
+        /* ---------- GSAP animations (hero + scroll reveal) ---------- */
+        (function initGSAP(){
+            if(!window.gsap) return;
+            gsap.registerPlugin(ScrollTrigger);
+
+            // hero entrance
+            gsap.to('.hero h2', { duration: 0.8, y: 0, opacity:1, ease: 'power3.out', delay: 0.2 });
+            gsap.to('.hero p', { duration: 0.9, y: 0, opacity:1, ease: 'power3.out', delay: 0.35 });
+            gsap.from('.btn-primary', { duration: 0.7, y: 8, opacity:0, delay:0.5, ease:'power2.out' });
+
+            // reveal cards on scroll
+            gsap.utils.toArray('.card').forEach((card, i)=>{
+                gsap.to(card, {
+                    opacity:1, y:0, duration:0.7, ease:'power3.out',
+                    scrollTrigger:{ trigger: card, start: 'top 85%', toggleActions: 'play none none reverse' },
+                    delay: i*0.06
+                });
+            });
+
+            // tech grid slight stagger
+            gsap.from('.tech-item', { scrollTrigger:{ trigger: '.tech-grid', start: 'top 85%' }, y:14, opacity:0, duration:0.7, stagger:0.08, ease:'power3.out' });
+
+            // carousel simple fade handled in JS; nav subtle appearance
+            gsap.from('header', { y:-20, opacity:0, duration:0.7, ease:'power2.out' });
+        })();
+
+        /* ---------- Facilities Carousel ---------- */
+        (function initCarousel(){
+            const slides = Array.from(document.querySelectorAll('.carousel-slide'));
+            if(slides.length === 0) return;
+
+            let current = 0; let timer=null; const interval=5000; const carousel = document.getElementById('facilitiesCarousel');
+            function show(index){ slides.forEach((s,i)=> s.classList.toggle('active', i===index)); current=index }
+            function next(){ show( (current + 1) % slides.length ); }
+            function start(){ if(timer) clearInterval(timer); timer = setInterval(next, interval); }
+            function stop(){ if(timer){ clearInterval(timer); timer = null; } }
+            start();
+            carousel.addEventListener('mouseenter', stop); carousel.addEventListener('mouseleave', start);
+            let startX=0, isTouch=false;
+            carousel.addEventListener('touchstart', (e)=>{ isTouch=true; startX = e.touches[0].clientX; stop(); }, {passive:true});
+            carousel.addEventListener('touchend', (e)=>{ if(!isTouch) return; const endX = (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : startX); const dx = endX - startX; if(Math.abs(dx)>50){ if(dx<0) next(); else show((current-1+slides.length)%slides.length); } start(); isTouch=false; });
+        })();
+
+    </script>
+</body>
+</html>
